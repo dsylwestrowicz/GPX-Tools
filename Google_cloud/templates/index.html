@@ -11,10 +11,10 @@
     <!-- Sidebar/menu -->
     <nav class="w3-sidebar w3-bar-block w3-animate-left w3-text-white w3-collapse w3-top w3-center" style="z-index:3;width:300px;font-weight:bold;background-color:#ff8200" id="mySidebar">
         <br>
-        <h3 class="w3-padding-64 w3-center"><b>GPS<br>Activity Analysts</b></h3>
+        <h3 class="w3-padding-64 w3-center" style="display: block;"><b>GPS<br>Activity Analysts</b></h3>
         <a href="javascript:void(0)" onclick="w3_close()" class="w3-bar-item w3-button w3-padding w3-hide-large">CLOSE</a>
         
-        <h3 class="w3-padding-16">Project Members</h3>
+        <h3 class="w3-padding-16" style="display: block;">Project Members</h3>
         <h6>Daniel Sylwestrowicz</h6>
         <h6>Owen Barbour</h6>
         <h6>Charles Weber</h6>
@@ -58,8 +58,10 @@
                 <h4>
                     Download processed .gpx file:
                 </h4>
-                <button onclick="location.href='https://storage.googleapis.com/linen-mason-217917.appspot.com/input/current.gpx'"
+                <button onclick="location.href='{{outpath}}'"
                         target="_blank" class="w3-button w3-light-grey">Download</button>
+                <br>
+                <a href=".">Try another file.</a>
             </div>
             {% endif %}
         </div>

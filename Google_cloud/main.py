@@ -18,7 +18,7 @@ def main():
             return 'No file selected.'
         if infile:
             inpath = '/' + os.environ.get('BUCKET_NAME',app_identity.get_default_gcs_bucket_name()) + '/input/current.gpx'
-            inpath = '/' + os.environ.get('BUCKET_NAME',app_identity.get_default_gcs_bucket_name()) + '/output/UpdatedTracks.gpx'
+            outpath = '/' + os.environ.get('BUCKET_NAME',app_identity.get_default_gcs_bucket_name()) + '/output/UpdatedTracks.gpx'
             gcs_file = gcs.open(inpath,'w',content_type='application/gpx+xml',options={'x-goog-acl': 'public-read'})
             gcs_file.write(infile.read())
             gcs_file.close()
