@@ -5,21 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
-<style>
-    body, h1, h2, h3, h4, h5 {
-        font-family: "Raleway", sans-serif
-    }
-
-    .w3-third img {
-        margin-bottom: -6px;
-        opacity: 0.8;
-        cursor: pointer
-    }
-
-        .w3-third img:hover {
-            opacity: 1
-        }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <body class="w3-light-grey w3-content" style="max-width:1600px">
 
     <!-- Sidebar/menu -->
@@ -57,19 +43,24 @@
         <!-- HOME section -->
         <div class="w3-container w3-white w3-padding-32" id="home">
             <div class="w3-center">
-                <h1>Usage</h1>
+                <h1>Improve Your Tracks</h1>
             </div>
             {% if not fileUploaded %}
-            <h4>Upload a .gpx file:</h4>
-            <form method="post" enctype="multipart/form-data">
-                <input type="file" name="file">
-                <input type="submit" value="Upload">
-            </form>
+            <div class="w3-center">
+                <h4>Upload a .gpx file:</h4>
+                <form method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" class="w3-button w3-light-grey">
+                    <input type="submit" value="Upload" class="w3-button w3-light-grey">
+                </form>
+            </div>
             {% else %}
-            <h4>
-                Download processed .gpx file:
-                <span> <button onclick="location.href='download'" target="_blank" class="w3-button w3-light-grey w3-padding-small w3-margin-top w3-margin-bottom">Download</button> </span>
-            </h4>
+            <div class="w3-center">
+                <h4>
+                    Download processed .gpx file:
+                </h4>
+                <button onclick="location.href='https://storage.googleapis.com/linen-mason-217917.appspot.com/input/current.gpx'"
+                        target="_blank" class="w3-button w3-light-grey">Download</button>
+            </div>
             {% endif %}
         </div>
 
