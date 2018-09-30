@@ -16,7 +16,7 @@ class Overpass_Query:
     #   which stores lists of coordinates with the matching pathId
     def getPaths(self):
         overpass_query = '[out:json];(way["highway"](around:'+str(SEARCH_RADIUS)+', '+str(self.lat)+', '+str(self.lon)+');>;);out;'
-        query = url + '?data=' + overpass_query
+        query = OVERPASS_URL + '?data=' + overpass_query
         try:
             response = urlfetch.fetch(query)
             data = response.content 
