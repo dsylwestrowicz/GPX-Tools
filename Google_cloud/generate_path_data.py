@@ -22,7 +22,7 @@ class Overpass_Query:
             data = response.content 
         except urlfetch.Error:
             logging.exception('Caugh exception fetching url')
-        data = response.json()
+        data = json.loads(data)
         nodes = {}
         paths = {}
         nodes_lookup = []
