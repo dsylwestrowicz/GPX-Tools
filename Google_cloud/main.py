@@ -26,7 +26,7 @@ def main():
             gcs_file.write(infile.read())
             gcs_file.close()
             cloudReadFile = gcs.open(inpath)
-            cloudWriteFile = gcs.open(outpath)
+            cloudWriteFile = gcs.open(outpath,'w',content_type='application/gpx+xml',options={'x-goog-acl': 'public-read'})
             # Process
             activity = parse_gpx.Activity(cloudReadFile)
             coordinates = activity.getCoordinates()
