@@ -13,17 +13,21 @@ def main():
     if request.method == 'POST':
         if 'file' not in request.files:
             return 'No file part.'
-        file = request.files['file']
-        if file.filename == '':
+        infile = request.files['file']
+        if infile.filename == '':
             return 'No file selected.'
-        if file:
+        if infile:
             inpath = '/' + os.environ.get('BUCKET_NAME',app_identity.get_default_gcs_bucket_name()) + '/input/current.gpx'
+            inpath = '/' + os.environ.get('BUCKET_NAME',app_identity.get_default_gcs_bucket_name()) + '/output/UpdatedTracks.gpx'
             gcs_file = gcs.open(inpath,'w',content_type='application/gpx+xml',options={'x-goog-acl': 'public-read'})
-            gcs_file.write(file.read())
+            gcs_file.write(infile.read())
             gcs_file.close()
-            # Read input/current.gpx
+            cloudReadFile = gcs.open(inpath)
+            cloudWriteFile = gcs.open(outpath)
             # Process
-            # Write output/current.gpx
+            
+            cloudReadFile.close()
+            cloudWriteFile.close()
             return render_template('index.html',fileUploaded=True)
     else:
         return render_template('index.html',fileUploaded=False)
