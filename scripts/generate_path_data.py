@@ -1,4 +1,4 @@
-import requests
+from google.appengine.api import urlfetch
 import json
 import copy
 
@@ -16,7 +16,12 @@ class Overpass_Query:
     #   which stores lists of coordinates with the matching pathId
     def getPaths(self):
         overpass_query = '[out:json];(way["highway"](around:'+str(SEARCH_RADIUS)+', '+str(self.lat)+', '+str(self.lon)+');>;);out;'
-        response = requests.get(OVERPASS_URL, params={'data': overpass_query})
+        query = url + '?data=' + overpass_query
+        try:
+            response = urlfetch.fetch(query)
+            data = response.content 
+        except urlfetch.Error:
+            logging.exception('Caugh exception fetching url')
         data = response.json()
         nodes = {}
         paths = {}
