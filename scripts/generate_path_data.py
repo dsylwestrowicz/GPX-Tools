@@ -3,7 +3,7 @@ import json
 import copy
 
 OVERPASS_URL = 'http://overpass-api.de/api/interpreter'
-SEARCH_RADIUS = 25.0    #in meters
+SEARCH_RADIUS = 3000.0    #in meters
 
 class Overpass_Query:
     #   Constructor for creating a new query, it takes the lat, lon of a data point.
