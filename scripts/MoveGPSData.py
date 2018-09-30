@@ -71,18 +71,23 @@ class MoveGPSData:
         # print(json.dumps(self.coordinate_list, indent=4))
 
     def move_points(self, i):
+
         #for coord in self.gpx_list:
         #    new_coord = float(coord[0]), float(coord[1])
         #    coord = new_coord
         #for i in range(0, len(self.gpx_list)):
+        
         if i == 0:
             gpx_slope = (self.gpx_list[1][1] - self.gpx_list[0][1]) / (self.gpx_list[1][0] - self.gpx_list[0][0])
         elif i == len(self.gpx_list) - 1:
             gpx_slope = (self.gpx_list[i][1] - self.gpx_list[i - 1][1]) / \
                         (self.gpx_list[i][0] - self.gpx_list[i - 1][0])
         else:
-            gpx_slope = (self.gpx_list[i + 1][1] - self.gpx_list[i - 1][1]) / \
-                        (self.gpx_list[i + 1][0] - self.gpx_list[i - 1][0])
+            if (self.gpx_list[i + 1][0] - self.gpx_list[i - 1][0]) != 0:
+                gpx_slope = (self.gpx_list[i + 1][1] - self.gpx_list[i - 1][1]) / \
+                            (self.gpx_list[i + 1][0] - self.gpx_list[i - 1][0])
+            else:
+                gpx_slope = -1
         # print(gpx_slope)
 
         # Find the points closest to the gpx point
@@ -116,6 +121,8 @@ class MoveGPSData:
                     # print(dist_to_osm)
                 osm_distance_keys = sorted(list(osm_distance_dict.keys()))
                 # The who keys we want are at index 1 and 2 since index 0 should be 0.0 or the point itself
+                if len(osm_distance_keys) < 3:
+                    break
                 first_pt_tuple = osm_distance_dict[osm_distance_keys[1]]
                 second_pt_tuple = osm_distance_dict[osm_distance_keys[2]]
 
@@ -149,7 +156,6 @@ class MoveGPSData:
             # proj1 = get_projected_point_on_line_v1(v1, v2, pnt)
             proj2 = self.get_projected_point_on_line_v2(v1, v2, pnt)
             # print(proj1, proj2)
-
             self.gpx_list[i] = proj2
 
             self.points_changed += 1
@@ -160,7 +166,7 @@ class MoveGPSData:
         #print("Number of coordinates changed: " + str(self.points_changed))
         #print("Total number of coordinates: " + str(len(self.gpx_list)))
         return self.gpx_list[i], self.points_changed
-
+                
 
 def main():
     file = 'maryville_college_woods.geojson'

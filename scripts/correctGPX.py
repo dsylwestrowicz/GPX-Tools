@@ -14,7 +14,7 @@ def main():
     paths, nodes = query.getPaths()
 
     for coordinate in coordinates:
-        move = MoveGPSData.MoveGPSData(15, 1.0, 15, coordinates)
+        move = MoveGPSData.MoveGPSData(10, 1.6, 16, coordinates)
         a = paths, nodes
         move.import_paths_and_coors(a)
         new_coordinates[i], point_change = move.move_points(i)
