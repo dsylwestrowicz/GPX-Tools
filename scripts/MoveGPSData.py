@@ -20,7 +20,7 @@ class MoveGPSData:
         self.num_points_considered = pts_considered
         self.slope_threshold = sl_threshold
         self.distance_threshold = dist_threshold
-        self.distance_degree_threshold = (1 / 111320) * dist_threshold
+        self.distance_degree_threshold = dist_threshold / 111320.0
 
         if gpx_raw is not None:
             self.gpx_list = gpx_raw
@@ -70,87 +70,96 @@ class MoveGPSData:
         # print(json.dumps(self.unique_paths, indent=4))
         # print(json.dumps(self.coordinate_list, indent=4))
 
-    def move_points(self):
-        for i in range(0, len(self.gpx_list)):
-            if i == 0:
-                gpx_slope = (self.gpx_list[1][1] - self.gpx_list[0][1]) / (self.gpx_list[1][0] - self.gpx_list[0][0])
-            elif i == len(self.gpx_list) - 1:
-                gpx_slope = (self.gpx_list[i][1] - self.gpx_list[i - 1][1]) / \
-                            (self.gpx_list[i][0] - self.gpx_list[i - 1][0])
-            else:
-                gpx_slope = (self.gpx_list[i + 1][1] - self.gpx_list[i - 1][1]) / \
-                            (self.gpx_list[i + 1][0] - self.gpx_list[i - 1][0])
-            # print(gpx_slope)
+    def move_points(self, i):
+        #for coord in self.gpx_list:
+        #    new_coord = float(coord[0]), float(coord[1])
+        #    coord = new_coord
+        #for i in range(0, len(self.gpx_list)):
+        if i == 0:
+            gpx_slope = (self.gpx_list[1][1] - self.gpx_list[0][1]) / (self.gpx_list[1][0] - self.gpx_list[0][0])
+        elif i == len(self.gpx_list) - 1:
+            gpx_slope = (self.gpx_list[i][1] - self.gpx_list[i - 1][1]) / \
+                        (self.gpx_list[i][0] - self.gpx_list[i - 1][0])
+        else:
+            gpx_slope = (self.gpx_list[i + 1][1] - self.gpx_list[i - 1][1]) / \
+                        (self.gpx_list[i + 1][0] - self.gpx_list[i - 1][0])
+        # print(gpx_slope)
 
-            # Find the points closest to the gpx point
-            distance_id_dict = {}
-            for coordinates in self.coordinate_list:
-                dist = math.sqrt(pow((coordinates[0] - self.gpx_list[i][0]), 2) +
-                                 pow((coordinates[1] - self.gpx_list[i][1]), 2))
-                distance_id_dict[dist] = (coordinates[0], coordinates[1], coordinates[2])
-            distance_keys = sorted(list(distance_id_dict.keys()))
+        # Find the points closest to the gpx point
+        distance_id_dict = {}
+        for coordinates in self.coordinate_list:
+            dist = math.sqrt(pow((coordinates[0] - self.gpx_list[i][0]), 2) +
+                                pow((coordinates[1] - self.gpx_list[i][1]), 2))
+            distance_id_dict[dist] = (coordinates[0], coordinates[1], coordinates[2])
+        distance_keys = sorted(list(distance_id_dict.keys()))
+        # print str(distance_keys)
 
-            # Look at the closest 5 points - for each OSM point
-            osm_slope_list = []
-            osm_slope_divisions = []
-            for j in range(0, min(self.num_points_considered, len(distance_keys))):
+        # Look at the closest 5 points - for each OSM point
+        osm_slope_list = []
+        osm_slope_divisions = []
+        for j in range(0, min(self.num_points_considered, len(distance_keys))):
+            
+            # Apply the distance threshold specified in the constructor
+            # The distance was converted to degrees of lat/long so it can be applied
+            # print distance_keys[j], self.distance_degree_threshold
+            if distance_keys[j] <= self.distance_degree_threshold:
+                way_id = distance_id_dict[distance_keys[j]]
+                # print(distance_keys[j], way_id)  ########
 
-                # Apply the distance threshold specified in the constructor
-                # The distance was converted to degrees of lat/long so it can be applied
-                if distance_keys[j] <= self.distance_degree_threshold:
-                    way_id = distance_id_dict[distance_keys[j]]
-                    # print(distance_keys[j], way_id)  ########
+                # Get the closet two OSM points on the same curve/section way
+                curve_options = self.unique_paths[way_id[2]]
+                osm_distance_dict = {}  # maps distance between index
+                for curve_coordinate in curve_options:
+                    inside_sqrt = pow(way_id[0] - curve_coordinate[0], 2) + pow(way_id[1] - curve_coordinate[1], 2)
+                    dist_to_osm = math.sqrt(inside_sqrt)
+                    osm_distance_dict[dist_to_osm] = (curve_coordinate[0], curve_coordinate[1], way_id[2])
+                    # print(dist_to_osm)
+                osm_distance_keys = sorted(list(osm_distance_dict.keys()))
+                # The who keys we want are at index 1 and 2 since index 0 should be 0.0 or the point itself
+                first_pt_tuple = osm_distance_dict[osm_distance_keys[1]]
+                second_pt_tuple = osm_distance_dict[osm_distance_keys[2]]
 
-                    # Get the closet two OSM points on the same curve/section way
-                    curve_options = self.unique_paths[way_id[2]]
-                    osm_distance_dict = {}  # maps distance between index
-                    for curve_coordinate in curve_options:
-                        inside_sqrt = pow(way_id[0] - curve_coordinate[0], 2) + pow(way_id[1] - curve_coordinate[1], 2)
-                        dist_to_osm = math.sqrt(inside_sqrt)
-                        osm_distance_dict[dist_to_osm] = (curve_coordinate[0], curve_coordinate[1], way_id[2])
-                        # print(dist_to_osm)
-                    osm_distance_keys = sorted(list(osm_distance_dict.keys()))
-                    # The who keys we want are at index 1 and 2 since index 0 should be 0.0 or the point itself
-                    first_pt_tuple = osm_distance_dict[osm_distance_keys[1]]
-                    second_pt_tuple = osm_distance_dict[osm_distance_keys[2]]
+                # Calculate slope between these two points
+                osm_slope = (second_pt_tuple[1] - first_pt_tuple[1]) / (second_pt_tuple[0] - first_pt_tuple[0])
+                # print(osm_slope)
+                osm_slope_list.append((osm_slope, first_pt_tuple, second_pt_tuple))
 
-                    # Calculate slope between these two points
-                    osm_slope = (second_pt_tuple[1] - first_pt_tuple[1]) / (second_pt_tuple[0] - first_pt_tuple[0])
-                    # print(osm_slope)
-                    osm_slope_list.append((osm_slope, first_pt_tuple, second_pt_tuple))
+        # Now select the slope of the OSM data that is closest to our GPX curve slope
+        # print(osm_slope_list)
 
-            # Now select the slope of the OSM data that is closest to our GPX curve slope
-            # print(osm_slope_list)
+        smallest_slope_diff_div = 100000
+        smallest_slope_diff_div_index = -1
+        for j in range(0, len(osm_slope_list)):
+            slope_div = abs(1 - abs(osm_slope_list[j][0] / gpx_slope))
+            osm_slope_divisions.append(slope_div)
 
-            smallest_slope_diff_div = 100000
-            smallest_slope_diff_div_index = -1
-            for j in range(0, len(osm_slope_list)):
-                slope_div = abs(1 - abs(osm_slope_list[j][0] / gpx_slope))
-                osm_slope_divisions.append(slope_div)
-                if slope_div < smallest_slope_diff_div and slope_div <= self.slope_threshold:  # threshold applied
-                    smallest_slope_diff_div = slope_div
-                    smallest_slope_diff_div_index = j
+            # print slope_div, smallest_slope_diff_div
+            # print slope_div, self.slope_threshold
 
-            if smallest_slope_diff_div_index != -1:
-                # We are changing the point to on the path with this slope
-                ind = smallest_slope_diff_div_index
-                v1 = (osm_slope_list[ind][1][0], osm_slope_list[ind][1][1])
-                v2 = (osm_slope_list[ind][2][0], osm_slope_list[ind][2][1])
-                pnt = (self.gpx_list[i][0], self.gpx_list[i][1])
-                # proj1 = get_projected_point_on_line_v1(v1, v2, pnt)
-                proj2 = self.get_projected_point_on_line_v2(v1, v2, pnt)
-                # print(proj1, proj2)
+            if slope_div < smallest_slope_diff_div and slope_div <= self.slope_threshold:  # threshold applied
+                smallest_slope_diff_div = slope_div
+                smallest_slope_diff_div_index = j
 
-                self.gpx_list[i] = proj2
+        if smallest_slope_diff_div_index != -1:
+            # We are changing the point to on the path with this slope
+            ind = smallest_slope_diff_div_index
+            v1 = (osm_slope_list[ind][1][0], osm_slope_list[ind][1][1])
+            v2 = (osm_slope_list[ind][2][0], osm_slope_list[ind][2][1])
+            pnt = (self.gpx_list[i][0], self.gpx_list[i][1])
+            # proj1 = get_projected_point_on_line_v1(v1, v2, pnt)
+            proj2 = self.get_projected_point_on_line_v2(v1, v2, pnt)
+            # print(proj1, proj2)
 
-                self.points_changed += 1
+            self.gpx_list[i] = proj2
 
-            # Else we are not changing the point at all
+            self.points_changed += 1
 
-            # print('-----')
-        print("Number of coordinates changed: " + str(self.points_changed))
-        print("Total number of coordinates: " + str(len(self.gpx_list)))
-        return self.gpx_list
+        # Else we are not changing the point at all
+
+        # print('-----')
+        #print("Number of coordinates changed: " + str(self.points_changed))
+        #print("Total number of coordinates: " + str(len(self.gpx_list)))
+        return self.gpx_list[i], self.points_changed
 
 
 def main():
@@ -159,7 +168,7 @@ def main():
     # points considered, slope threshold (trail slope / gps recorded slope), distance threshold in meters, gpx list
     gps = MoveGPSData(5, .1, 20, None)
     gps.import_geojson(file)
-    gpx = gps.move_points()
+    #gpx = gps.move_points(1)
     print(gpx)
 
 

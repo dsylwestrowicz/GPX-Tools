@@ -3,7 +3,7 @@ import json
 import copy
 
 OVERPASS_URL = 'http://overpass-api.de/api/interpreter'
-SEARCH_RADIUS = 25.0    #in meters
+SEARCH_RADIUS = 50.0    #in meters
 
 class Overpass_Query:
     #   Constructor for creating a new query, it takes the lat, lon of a data point.
@@ -15,7 +15,7 @@ class Overpass_Query:
     #   coordinate lists that are included in that path as well as a nodes_lookup list
     #   which stores lists of coordinates with the matching pathId
     def getPaths(self):
-        overpass_query = '[out:json];(way["highway"](around:'+str(SEARCH_RADIUS)+', '+str(self.lat)+', '+str(self.lon)+');>;);out;'
+        overpass_query = '[out:json];(way[highway~"^(footway)$"](around:'+str(SEARCH_RADIUS)+', '+str(self.lat)+', '+str(self.lon)+');>;);out;'
         response = requests.get(OVERPASS_URL, params={'data': overpass_query})
         data = response.json()
         nodes = {}

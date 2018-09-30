@@ -8,6 +8,7 @@ class Activity:
     def __init__(self, fileName):
         self.fileName = fileName
         self.tree = ET.parse(fileName)
+        ET.register_namespace('',"http://www.topografix.com/GPX/1/1")
     
     #   Return all of the coordinates of the data points in the GPX file
     def getCoordinates(self):
@@ -18,7 +19,7 @@ class Activity:
                 for grand_child in child:
                     if grand_child.tag == prefix+'trkseg':
                         for data_point in grand_child:
-                            coordinates = data_point.attrib["lat"], data_point.attrib["lon"]
+                            coordinates = float(data_point.attrib["lat"]), float(data_point.attrib["lon"])
                             coords.append(coordinates)
 
         return coords
@@ -35,8 +36,8 @@ class Activity:
                 for grand_child in child:
                     if grand_child.tag == prefix+'trkseg':
                         for data_point in grand_child:
-                            data_point.attrib["lat"] = coords[i][0]
-                            data_point.attrib["lon"] = coords[i][1]
+                            data_point.attrib["lat"] = str(coords[i][0])
+                            data_point.attrib["lon"] = str(coords[i][1])
                             i = i + 1
         newFileName = self.fileName + "_new.gpx"
         self.tree.write(newFileName)
