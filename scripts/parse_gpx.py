@@ -27,7 +27,7 @@ class Activity:
     #   Takes a list of coordinate tuples (must list all in the same order as returned
     #   by getCoordinates). This will write a new GPX file and return the name of the
     #   newly created file
-    def modifyCoordinates(self, coords):
+    def modifyCoordinates(self, coords, newFile):
         root = self.tree.getroot()
         i = 0
 
@@ -39,7 +39,4 @@ class Activity:
                             data_point.attrib["lat"] = str(coords[i][0])
                             data_point.attrib["lon"] = str(coords[i][1])
                             i = i + 1
-        newFileName = self.fileName + "_new.gpx"
-        self.tree.write(newFileName)
-        return newFileName
-
+        self.tree.write(newFile)

@@ -2,7 +2,10 @@ from flask import Flask, render_template, request
 import logging
 import io, os
 import cloudstorage as gcs
-import webapp2
+import MoveGPSData
+import parse_gpx
+import generate_path_data
+import copy
 from google.appengine.api import app_identity
 
 app = Flask(__name__)
@@ -25,7 +28,23 @@ def main():
             cloudReadFile = gcs.open(inpath)
             cloudWriteFile = gcs.open(outpath)
             # Process
-            
+            activity = parse_gpx.Activity(cloudReadFile)
+            coordinates = activity.getCoordinates()
+            new_coordinates = copy.deepcopy(coordinates)
+            i = 0
+            total_pts_changed = 0
+            query = generate_path_data.Overpass_Query(coordinates[0][0], coordinates[0][1])
+            paths, nodes = query.getPaths()
+
+            for coordinate in coordinates:
+                move = MoveGPSData.MoveGPSData(10, 1.6, 16, coordinates)
+                a = paths, nodes
+                move.import_paths_and_coors(a)
+                new_coordinates[i], point_change = move.move_points(i)
+                total_pts_changed += point_change
+                i = i + 1
+            activity.modifyCoordinates(new_coordinates, cloudWriteFile)
+
             cloudReadFile.close()
             cloudWriteFile.close()
             return render_template('index.html',fileUploaded=True)
